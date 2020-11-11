@@ -81,7 +81,7 @@ public class BoidsScript : MonoBehaviour
         c = c / (amount-1);
 //
        // Debug.Log(c);
-                return (c - boid.position)/15;
+                return (c - boid.position)/2;
     }
 
 
