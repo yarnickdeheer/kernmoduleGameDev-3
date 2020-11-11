@@ -8,6 +8,7 @@ public class BoidsScript : MonoBehaviour
     public Transform prefab;
     public int amount;
     public Transform[] flock;
+    public Transform Cam;
     Vector3 pos1, pos2, pos3;
     // Start is called before the first frame update
     void Start()
@@ -17,12 +18,12 @@ public class BoidsScript : MonoBehaviour
         for (int i = 0; i < amount; i++)
         {
 
-            flock[i] = Instantiate(prefab, new Vector3(Random.Range(0, 5), Random.Range(0, 5), Random.Range(0, 5)), Quaternion.identity);
+            flock[i] = Instantiate(prefab, new Vector3(Random.Range(0, 5), Random.Range(0, 5), Random.Range(0, 5)), Quaternion.identity).transform;
           
         }
         foreach (Transform boid in flock)
         {
-            boid.GetComponent<Rigidbody>().velocity = transform.forward * Speed;
+           // boid.GetComponent<Boids>().velocity = transform.forward * Speed;
         } 
     }
 
@@ -36,11 +37,16 @@ public class BoidsScript : MonoBehaviour
             pos1 = seperation(boid);
             pos2 = alignment(boid);
             pos3 = cohesion(boid);
+            //Debug.Log("seperation " + pos1);
+           // Debug.Log("alignment " + pos2);
+          //  Debug.Log("cohesion " + pos3);
 
-            boid.GetComponent<Rigidbody>().velocity = boid.GetComponent<Rigidbody>().velocity + seperation(boid) + alignment(boid) + cohesion(boid);
-          // als je ze niet heeb en weer wil laten schommelen en ze statietsch op een positie wil laten flokken haal dit weg uit de lijn hierboven  (boid.GetComponent<Rigidbody>().velocity = transform.forward * Speed);
+
+            boid.GetComponent<Boids>().velocity += (pos1 + pos2 + pos3) * Time.deltaTime * 0.5f;
           
         }
+        Vector3 temp = flock[5].position;
+        Cam.position = new Vector3(temp.x, temp.y,temp.z - 100);
     }
     // seperation,alignment, cohesion
     Vector3 seperation(Transform boid)
@@ -51,9 +57,10 @@ public class BoidsScript : MonoBehaviour
             if (t != boid)
             {
                 float dist = Vector3.Distance(t.position, boid.position);
-                if (dist <= 2)
+                if (dist < 2)
                 {
-                    c = c + (t.position - boid.position);
+                    c = c - (t.position - boid.position);
+                 //   Debug.Log("seperation transform t " + t.position);
                 }
             }
 
@@ -67,12 +74,14 @@ public class BoidsScript : MonoBehaviour
         {
             if (t != boid)
             {
-                c = c + boid.position;
+                c = c + t.position;
+                //Debug.Log("cohesion transform t " + t.position);
             }
         }
-        c = c / 100;
-
-                return (c - boid.position)/100;
+        c = c / (amount-1);
+//
+       // Debug.Log(c);
+                return (c - boid.position)/15;
     }
 
 
@@ -81,16 +90,17 @@ public class BoidsScript : MonoBehaviour
     {
         Vector3 c = new Vector3(0, 0, 0);
 
-
+         
         foreach (Transform t in flock)
         {
             if (t != boid)
             {
-                c = c + boid.GetComponent<Rigidbody>().velocity;
+                c = c + t.GetComponent<Boids>().velocity;
             }
+           // Debug.Log("cohesion transform t " + t.position);
         } 
-        c = c / (amount - 1); 
-
-        return (c - boid.GetComponent<Rigidbody>().velocity) /100;
+        c = c / (amount - 1);
+       // Debug.Log("cohesion " + c);
+        return (c - boid.GetComponent<Boids>().velocity) /2f;
     }
-}
+} 
